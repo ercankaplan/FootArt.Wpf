@@ -1,0 +1,267 @@
+﻿<Window x:Class="Footart.MainWindow" Name="WinUI"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:t="clr-namespace:Footart.Utilities"
+        Title="MainWindow" WindowState="Maximized"  WindowStyle="ThreeDBorderWindow" Icon="images/foot_icon.png">
+    <Window.Resources>
+        <t:FileToIconConverter x:Key="fic" />
+    </Window.Resources>
+    
+    <Grid Name="gridMain">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="10*"></ColumnDefinition>
+            <ColumnDefinition Width="70*"></ColumnDefinition>
+            <ColumnDefinition Width="20*"></ColumnDefinition>
+
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="1"></RowDefinition>
+            <RowDefinition Height="50"></RowDefinition>
+            <RowDefinition></RowDefinition>
+            <RowDefinition Height="20"></RowDefinition>
+        </Grid.RowDefinitions>
+        <ToolBar Name="toolbar1" VerticalAlignment="Stretch" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Stretch" >
+
+            <!--<ToolBarTray Background="White">
+                <ToolBar Band="1" BandIndex="1" >
+                    <Button x:Name="btnOpen" Click="btnOpen_Click">
+                        -->
+            <!--<Image Height="22" Width="22" Source="toolbargraphics\open.bmp"  />-->
+            <!--
+                    </Button>
+                    <Button Name="btnSave" Click="btnSave_Click">
+                        -->
+            <!--<Image Height="22" Width="22" Source="toolbargraphics\save.bmp" />-->
+            <!--
+                    </Button>
+
+                </ToolBar>
+
+
+            </ToolBarTray>-->
+
+            
+            <Button  HorizontalAlignment="Center" Click="btnMode_Click" DataContext="3" IsEnabled="False" Name="btnFoot">
+                <Image HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Source="images\foot_icon.png" />
+            </Button>
+            <Button  Click="btnMode_Click" DataContext="4"  Name="btnLAAbMode" >
+                <Image HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Source="images\LAAb.png" />
+            </Button>
+            <Button  Click="btnMode_Click" DataContext="6"  Name="btnCalcanealMode" >
+                <Image HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Source="images\Calcaneal.png" />
+            </Button>
+            <Button  Click="btnMode_Click" DataContext="5"  Name="btnLAAsMode">
+                <Image HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Source="images\LAAs.jpg" />
+            </Button>
+            <Button  Click="btnUndo_Click" Name="btnUndo">
+                <Image HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Source="images\undo.ico" />
+            </Button>
+            <Button  Click="btnMode_Click" DataContext="2"  Name="btnRatioMode">
+                <Image HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Source="images\ruler.png" />
+            </Button>
+           
+            <TextBlock x:Name="lblRatio" Height="22" Width="69" Text="Lenght[cm]:"  Margin="0,18,0,5"></TextBlock>
+            <TextBox Name="txtLength" TextChanged="RatioChanged" Height="22" Width="36" Margin="2,18,0,5" Text="10"  />
+            <TextBlock x:Name="lbl" Height="22" Width="5" Text="/"  Margin="5,18,0,0"></TextBlock>
+            <TextBlock x:Name="lblDistance" Height="22" Width="50" Text=""  Margin="0,18,0,0">Ratio:</TextBlock>
+            <TextBlock x:Name="txtRatio" Text=""  Margin="10,18,0,0"></TextBlock>
+            <TextBlock x:Name="txtActiveFile" Text=""  Margin="10,18,0,0"></TextBlock>
+
+        </ToolBar>
+        <DockPanel Grid.Column="0" Grid.Row="1">
+            <Button x:Name="changeFile" Grid.Row="0" DockPanel.Dock="Right" Click="changeFile_Click"  Width="100" Height="22" Content="Change" />
+            <t:SelectFolderTextBox x:Name="filePath">
+                <Binding Path="Path" UpdateSourceTrigger="Explicit">
+                    <Binding.ValidationRules>
+                        <t:DirectoryExistsRule />
+                    </Binding.ValidationRules>
+                </Binding>
+            </t:SelectFolderTextBox>
+
+        </DockPanel>
+        <DockPanel Grid.Column="0" Grid.Row="2">
+
+            <ListBox x:Name="list" ItemsSource="{Binding Files}" Grid.Row="2"  >
+                <ListBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel IsItemsHost="True" 
+                               Width="{Binding ActualWidth,RelativeSource={RelativeSource AncestorType=ScrollContentPresenter}}" />
+                    </ItemsPanelTemplate>
+                </ListBox.ItemsPanel>
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <DockPanel >
+                            <TextBlock Text="{Binding Converter={x:Static t:PathToNameConverter.Instance}}"  TextAlignment="Center"
+                                   TextTrimming="CharacterEllipsis" DockPanel.Dock="Bottom" Width="{Binding ElementName=slider, Path=Value}" />
+                            <Image x:Name="img" Tag="{Binding Converter={x:Static t:PathToNameConverter.Instance}}" MouseLeftButtonDown="img_MouseLeftButtonDown"  Height="{Binding ElementName=slider, Path=Value}" Width="{Binding ElementName=slider, Path=Value}" 
+                           Stretch="UniformToFill">
+                                <Image.ToolTip>
+                                    <DockPanel>
+                                        <TextBlock x:Name="tipText" Text="{Binding Converter={x:Static t:PathToNameConverter.Instance}}" DockPanel.Dock="Top" Width="200" />
+                                        <Image x:Name="tipImage" Width="200" Height="200">
+                                            <Image.Source>
+                                                <MultiBinding Converter="{StaticResource fic}">
+                                                    <Binding />
+                                                </MultiBinding >
+                                            </Image.Source>
+                                        </Image>
+                                    </DockPanel>
+                                </Image.ToolTip>
+                                <Image.Source>
+                                    <MultiBinding Converter="{StaticResource fic}">
+                                        <Binding />
+                                        <Binding ElementName="slider" Path="Value" />
+                                    </MultiBinding >
+                                </Image.Source>
+                            </Image>
+                        </DockPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+
+        </DockPanel>
+        <TextBlock Name="txbCursor" Text="" Grid.Column="1" Foreground="Red" Grid.Row="3" HorizontalAlignment="Right" ></TextBlock>
+        <DockPanel Grid.Row="2" Background="WhiteSmoke" Grid.Column="1"
+                   MouseLeftButtonDown="imgAltlik_MouseLeftButtonDown"
+                   MouseMove="imgAltlik_MouseMove"
+                   MouseWheel="imgAltlik_MouseWheel">
+            <Canvas x:Name="cnvImage"  Width="0" Height="0"  >
+
+                <Image x:Name="imgCurrent" Margin="0,0,0,0" HorizontalAlignment="Center" VerticalAlignment="Center" >
+                    <Image.LayoutTransform>
+                        <ScaleTransform CenterX="0" CenterY="0" x:Name="imgScaleTransform" />
+                    </Image.LayoutTransform>
+
+                </Image>
+
+            </Canvas>
+        </DockPanel>
+        <DockPanel Grid.Column="2" Grid.Row="2" HorizontalAlignment="Stretch" VerticalAlignment="Top">
+            <Grid HorizontalAlignment="Stretch">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="25"></RowDefinition>
+                    <RowDefinition Height="25"></RowDefinition>
+                    <RowDefinition Height="25"></RowDefinition>
+                    <RowDefinition Height="25"></RowDefinition>
+                    <RowDefinition Height="5"></RowDefinition>
+                    <RowDefinition Height="20"></RowDefinition>
+                    <RowDefinition Height="5"></RowDefinition>
+                    <RowDefinition Height="20"></RowDefinition>
+                    <RowDefinition Height="5"></RowDefinition>
+                    <RowDefinition Height="20"></RowDefinition>
+                    <RowDefinition Height="5"></RowDefinition>
+                    <RowDefinition Height="25"></RowDefinition>
+                    <RowDefinition Height="25"></RowDefinition>
+                    <RowDefinition Height="25"></RowDefinition>
+                    <RowDefinition Height="5"></RowDefinition>
+                    <RowDefinition Height="*"></RowDefinition>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="10"></ColumnDefinition>
+                    <ColumnDefinition Width="30*"></ColumnDefinition>
+                    <ColumnDefinition Width="70*"></ColumnDefinition>
+                    <ColumnDefinition Width="10"></ColumnDefinition>
+
+                </Grid.ColumnDefinitions>
+                <TextBlock Name="txbFile" Text="File Name" Grid.Column="1" Grid.Row="0"></TextBlock>
+                <TextBlock Name="txlFileName" Height="22" Grid.Row="0" Grid.Column="2" />
+
+                <TextBlock Name="txbName" Text="Name" Grid.Column="1" Grid.Row="1"></TextBlock>
+                <TextBox Name="txtName" Height="22" Grid.Row="1" Grid.Column="2" />
+
+                <TextBlock Name="txbSurname" Text="Surname" Grid.Column="1" Grid.Row="2"></TextBlock>
+                <TextBox Name="txtSurname" Height="22" Grid.Row="2" Grid.Column="2" />
+
+                <TextBlock Name="txbGender" Text="Gender" Grid.Column="1" Grid.Row="3"></TextBlock>
+                <StackPanel Grid.Row="3" Grid.Column="2" Orientation="Horizontal" >
+                    <RadioButton Name="rbMale" GroupName="Gender">Male</RadioButton>
+                    <RadioButton Name="rbFemale" GroupName="Gender">Female</RadioButton>
+                </StackPanel>
+
+                <Separator Grid.Column="0" Grid.ColumnSpan="4" Grid.Row="4"></Separator>
+
+                <TextBlock Name="txbPerimeters" Text="LAA" Grid.Column="1" Grid.Row="5"></TextBlock>
+                <StackPanel Grid.Row="5" Grid.Column="2" HorizontalAlignment="Stretch" >
+                    <Grid HorizontalAlignment="Stretch">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="25"></RowDefinition>
+                           
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+
+                            <ColumnDefinition Width="50*"></ColumnDefinition>
+                            <ColumnDefinition Width="50*"></ColumnDefinition>
+
+
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Name="txbP1" Text=":" Grid.Column="0" Grid.Row="0"></TextBlock>
+                        <TextBlock Name="txlP1" Text="" Grid.Column="1" Grid.Row="0"></TextBlock>
+                        
+
+                    </Grid>
+
+                </StackPanel>
+                <Separator Grid.Column="0" Grid.ColumnSpan="4" Grid.Row="6"></Separator>
+
+                <TextBlock Name="txbLengths" Text="Width" Grid.Column="1" Grid.Row="7"></TextBlock>
+                <StackPanel Grid.Row="7" Grid.Column="2" HorizontalAlignment="Stretch" >
+                    <Grid HorizontalAlignment="Stretch">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="25"></RowDefinition>
+                           
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+
+                            <ColumnDefinition Width="50*"></ColumnDefinition>
+                            <ColumnDefinition Width="50*"></ColumnDefinition>
+
+
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Name="txbTL" Text=":" Grid.Column="0" Grid.Row="0"></TextBlock>
+                        <TextBlock Name="txlTL" Text="" Grid.Column="1" Grid.Row="0"></TextBlock>
+                     
+
+
+
+                    </Grid>
+
+                </StackPanel>
+                <Separator Grid.Column="0" Grid.ColumnSpan="4" Grid.Row="8"></Separator>
+                <TextBlock Name="txbCalcaneal" Text="Calcaneal" Grid.Column="1" Grid.Row="9"></TextBlock>
+                <TextBlock Name="txbCalcanealValue" Text="" Grid.Column="2" Grid.Row="9"></TextBlock>
+                <Separator Grid.Column="0" Grid.ColumnSpan="4" Grid.Row="10"></Separator>
+
+                <TextBlock Name="txbDominant" Text="Side/Back" Grid.Column="1" Grid.Row="11"></TextBlock>
+                <StackPanel Grid.Row="11" Grid.Column="2" Orientation="Horizontal" >
+                    <RadioButton  Name="rbSide" GroupName="Dominant">Side</RadioButton>
+                    <RadioButton Name="rbBack" GroupName="Dominant">Back</RadioButton>
+                </StackPanel>
+                <TextBlock Name="txbHand" Text="Hand" Grid.Column="1" Grid.Row="12"></TextBlock>
+                <StackPanel Grid.Row="12" Grid.Column="2" Orientation="Horizontal" >
+                    <RadioButton Name="rbHandR" GroupName="Hand">Right</RadioButton>
+                    <RadioButton Name="rbHandL" GroupName="Hand">Left</RadioButton>
+                </StackPanel>
+                <Button x:Name="btnAddHand" Content="Add Foot" Grid.Column="2" Grid.Row="13" HorizontalAlignment="Stretch" VerticalAlignment="Top" Height="22" Click="btnAddHand_Click"></Button>
+                <Separator Grid.Column="0" Grid.ColumnSpan="4" Grid.Row="14"></Separator>
+                <ListView x:Name="lvHandList" ItemsSource="{Binding ElementName=WinUI, Path=HandDataList}"  Grid.ColumnSpan="4" Grid.Row="15" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" >
+                    <ListView.View>
+                        <GridView>
+                            <GridViewColumn Header="FileName" Width="auto" DisplayMemberBinding="{Binding Path=FileName}" ></GridViewColumn>
+                            <GridViewColumn Header="Ad" Width="auto" DisplayMemberBinding="{Binding Path=Name}" ></GridViewColumn>
+                            <GridViewColumn Header="Soyad" Width="auto" DisplayMemberBinding="{Binding Path=Surname}" ></GridViewColumn>
+                            <GridViewColumn Header="LAA" Width="auto" DisplayMemberBinding="{Binding Path=LAA}" ></GridViewColumn>
+                            <GridViewColumn Header="Width" Width="auto" DisplayMemberBinding="{Binding Path=Width}" ></GridViewColumn>
+                            <GridViewColumn Header="Calcaneal" Width="auto" DisplayMemberBinding="{Binding Path=Calcaneal}" ></GridViewColumn>
+                            <GridViewColumn Header="RightOrLeft" Width="auto" DisplayMemberBinding="{Binding Path=RightOrLeftText}" ></GridViewColumn>
+                            <GridViewColumn Header="SideOrBack" Width="auto" DisplayMemberBinding="{Binding Path=SideOrBackText}" ></GridViewColumn>
+                            <GridViewColumn Header="Optime" Width="auto" DisplayMemberBinding="{Binding Path=Optime , StringFormat=\{0:dd-MM-yyyy HH:mm\}}" ></GridViewColumn>
+
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+            </Grid>
+        </DockPanel>
+    </Grid>
+</Window>
