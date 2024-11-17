@@ -17,18 +17,24 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Footart.Models;
 using Footart.Utilities;
+using FootArt.Data.Entities;
+using FootArt.Data;
+using System.Runtime.Remoting.Contexts;
+using Footart.Data;
+using System.Data.Entity;
 
 namespace Footart
 {
     public enum EnumMouseMode
     {
-        Idle,
-        Zoom,
-        Ratio,
-        FootWidth,
-        LAAb,
-        LAAs,
-        Calcaneal
+        Idle=0,
+        Zoom =1,
+        Ratio = 2 ,
+        FootWidth =3,
+        LAAb =4,
+        LAAs =5,
+        Calcaneal = 6,
+        QAngle = 7
     }
     /// <summary>
     /// Interaction logic for MainWindow.xaml
@@ -38,11 +44,18 @@ namespace Footart
 
         private static List<FootData> _HandDataList;
 
+        private static List<StudyData> _FootDataList;
 
         public static List<FootData> HandDataList
         {
             get { return MainWindow._HandDataList; }
             set { MainWindow._HandDataList = value; }
+        }
+
+        public static List<StudyData> FootDataList
+        {
+            get { return MainWindow._FootDataList; }
+            set { MainWindow._FootDataList = value; }
         }
 
         public static int POINT_THICKNESS = 5;
@@ -74,6 +87,7 @@ namespace Footart
         public static List<Point> LAAbPointList;
         public static List<Point> LAAsPointList;
         public static List<Point> CalcanealPointList;
+        public static List<Point> QAnglelPointList;
 
         //public static Double[] Alanlar = new Double[5];
 
@@ -141,7 +155,7 @@ namespace Footart
             if (!string.IsNullOrEmpty(model.Path))
                 DBHelper.CreateDataFile(model.Path + "\\", projectName);
 
-            InitializeHandData();
+            InitializeFootData();
 
 
         }
@@ -172,7 +186,7 @@ namespace Footart
             }
         }
 
-        private void InitializeHandData()
+        private void InitializeFootData()
         {
             dRatio = 1;
             txtRatio.Text = "";
@@ -181,20 +195,24 @@ namespace Footart
             txbSurname.Text = "";
             txbName.Text = "";
 
+
+            txbCalcanealValue.Text = "";
+            txlLAA.Text = "";
+            txlQAngle.Text = "";
+
             oCurrentRatio = new Polyline();
             FootwidthPointList = new List<Point>();
             LAAbPointList = new List<Point>();
             LAAsPointList = new List<Point>();
             CalcanealPointList = new List<Point>();
+            QAnglelPointList = new List<Point>();
             LabelList = new List<TextBlock>();
 
             oCurrentHandPolygons = new List<Polygon>() { new Polygon(), new Polygon(), new Polygon(), new Polygon(), new Polygon() };
-            if (!string.IsNullOrEmpty(model.Path))
-                HandDataList = DBHelper.ReadDataFile(projectName);
-            lvHandList.ItemsSource = HandDataList.OrderByDescending(x => x.Optime);
 
-            txlP1.Text = "";
-            txlTL.Text = "";
+
+            RefreshGrid();
+
 
         }
 
@@ -212,7 +230,7 @@ namespace Footart
 
             }
 
-            InitializeHandData();
+            InitializeFootData();
 
 
             activeFile = ((Image)sender).Tag.ToString(); ;
@@ -247,6 +265,8 @@ namespace Footart
             imgCurrent.Source = myBitmapImage;
             cnvImage.Height = imgCurrent.Height;
             cnvImage.Width = imgCurrent.Width;
+
+            txtTitle.Text = path.Split('\\').Last().Split(' ').First();
 
 
         }
@@ -330,6 +350,24 @@ namespace Footart
                 if (CalcanealPointList.Count != 4)
                 {
                     CalcanealPointList.Add(p);
+                    DrawPoint(p, ACTIVE_LINE_COLOR);
+                    RefreshPolygons();
+                    RefreshPointLabels();
+                }
+
+            }
+
+
+            if (MouseMode == EnumMouseMode.QAngle)
+            {
+                if (QAnglelPointList.Count == 1)
+                {
+                    p.X = QAnglelPointList[0].X;
+                }
+
+                if (QAnglelPointList.Count != 4)
+                {
+                    QAnglelPointList.Add(p);
                     DrawPoint(p, ACTIVE_LINE_COLOR);
                     RefreshPolygons();
                     RefreshPointLabels();
@@ -492,9 +530,33 @@ namespace Footart
 
                     if (CalcanealPointList.Count() == 3)
                     {
-                        kesisimNoktasi = FindIntersection(CalcanealPointList[0], CalcanealPointList[1], CalcanealPointList[2],p);
+                        kesisimNoktasi = FindIntersection(CalcanealPointList[0], CalcanealPointList[1], CalcanealPointList[2], p);
 
-                       
+
+                    }
+                }
+            }
+            else if (MouseMode == EnumMouseMode.QAngle)
+            {
+                if (QAnglelPointList.Count > 0 && QAnglelPointList.Count < 4)
+                {
+                    if (oTempIRLine != null)
+                        cnvImage.Children.Remove(oTempIRLine);
+
+                    Point lastPoint = QAnglelPointList[QAnglelPointList.Count - 1];
+                    oTempIRLine = new Line();
+
+                    if (QAnglelPointList.Count == 1)
+                        p.X = QAnglelPointList[0].X;
+
+                    if (QAnglelPointList.Count() % 2 != 0)
+                        DrawLine(oTempIRLine, lastPoint, p, ACTIVE_LINE_COLOR);
+
+                    if (QAnglelPointList.Count() == 3)
+                    {
+                        kesisimNoktasi = FindIntersection(QAnglelPointList[0], QAnglelPointList[1], QAnglelPointList[2], p);
+
+
                     }
                 }
             }
@@ -538,7 +600,7 @@ namespace Footart
                 {
 
 
-                    txlTL.Text = GetDistance(FootwidthPointList[0], FootwidthPointList[1]).ToString("N2");
+                    //txlTL.Text = GetDistance(FootwidthPointList[0], FootwidthPointList[1]).ToString("N2");
 
                 }
 
@@ -568,7 +630,7 @@ namespace Footart
                 {
 
                     double dAngle = Convert.ToDouble(GetAngle(LAAbPointList[2], LAAbPointList[4], LAAbPointList[3]).ToString("N2"));
-                    txlP1.Text = dAngle.ToString();
+                    txlLAA.Text = dAngle.ToString();
 
                     TextBlock txt = new TextBlock();
                     txt.Text = dAngle.ToString();
@@ -604,7 +666,7 @@ namespace Footart
 
 
                     double dAngle = Convert.ToDouble(GetAngle(LAAsPointList[0], LAAsPointList[2], LAAsPointList[1]).ToString("N2"));
-                    txlP1.Text = dAngle.ToString();
+                    txlLAA.Text = dAngle.ToString();
 
                     TextBlock txt = new TextBlock();
                     txt.Text = dAngle.ToString();
@@ -641,16 +703,43 @@ namespace Footart
 
                     double dAngle = Convert.ToDouble(GetAngle(CalcanealPointList[1], CalcanealPointList[3], kesisimNoktasi).ToString("N2"));
 
-                
+
                     txtKesisimAngle.Text = dAngle.ToString();
                     txbCalcanealValue.Text = dAngle.ToString();
 
-                    Canvas.SetTop(txtKesisimAngle, kesisimNoktasi.Y+3);
-                    Canvas.SetLeft(txtKesisimAngle, kesisimNoktasi.X+3);
-                
+                    Canvas.SetTop(txtKesisimAngle, kesisimNoktasi.Y + 3);
+                    Canvas.SetLeft(txtKesisimAngle, kesisimNoktasi.X + 3);
+
                 }
             }
 
+            if (MouseMode == EnumMouseMode.QAngle)
+            {
+                for (int i = 0; i < QAnglelPointList.Count; i++)
+                {
+                    DrawPoint(QAnglelPointList[i], RATIO_LINE_COLOR);
+
+                    if (i < QAnglelPointList.Count - 1)
+                        if (i != 1)
+                            DrawLine(new Line(), QAnglelPointList[i], QAnglelPointList[i + 1], RATIO_LINE_COLOR);
+                }
+
+                if (QAnglelPointList.Count == 4)
+                {
+                    Point kesisimNoktasi = FindIntersection(QAnglelPointList[0], QAnglelPointList[1], QAnglelPointList[2], QAnglelPointList[3]);
+
+                    double dAngle = Convert.ToDouble(GetAngle(QAnglelPointList[1], QAnglelPointList[3], kesisimNoktasi).ToString("N2"));
+
+                    txlQAngle.Text = dAngle.ToString();
+
+                    txtKesisimAngle.Text = dAngle.ToString();
+             
+
+                    Canvas.SetTop(txtKesisimAngle, kesisimNoktasi.Y + 3);
+                    Canvas.SetLeft(txtKesisimAngle, kesisimNoktasi.X + 3);
+
+                }
+            }
 
             foreach (var p in oCurrentRatio.Points)
             {
@@ -661,6 +750,26 @@ namespace Footart
             {
                 DrawLine(new Line(), oCurrentRatio.Points[0], oCurrentRatio.Points[1], RATIO_LINE_COLOR);
 
+            }
+        }
+
+        private void DeleteButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (((Button)sender).Tag is Guid)
+            {
+                Guid id = new Guid(((Button)sender).Tag.ToString());
+
+                using (var db = new AppDbContext())
+                {
+                    var studyData = db.StudyData.FirstOrDefault(x => x.Id == id);
+                    if (studyData != null)
+                    {
+                        db.StudyData.Remove(studyData);
+                        db.SaveChanges();
+                    }
+                }
+
+                RefreshGrid();
             }
         }
 
@@ -762,7 +871,7 @@ namespace Footart
 
         private Point FindIntersection(Point s1, Point e1, Point s2, Point e2)
         {
-           
+
 
 
             double a1 = e1.Y - s1.Y;
@@ -803,15 +912,15 @@ namespace Footart
 
             double dAngle = Convert.ToDouble(GetAngle(e1, e2, kesisimNoktasi).ToString("N2"));
 
-            
+
             txtKesisimAngle.Text = dAngle.ToString();
             txtKesisimAngle.Foreground = Brushes.Black;
             txtKesisimAngle.FontSize = 24;
             txtKesisimAngle.FontWeight = FontWeights.Bold;
 
 
-            Canvas.SetTop(txtKesisimAngle, kesisimNoktasi.Y+3);
-            Canvas.SetLeft(txtKesisimAngle, kesisimNoktasi.X+3);
+            Canvas.SetTop(txtKesisimAngle, kesisimNoktasi.Y + 3);
+            Canvas.SetLeft(txtKesisimAngle, kesisimNoktasi.X + 3);
             cnvImage.Children.Add(txtKesisimAngle);
 
             return kesisim;
@@ -854,6 +963,37 @@ namespace Footart
         {
             MouseMode = (EnumMouseMode)Convert.ToByte(((Button)sender).DataContext);
 
+            if (MouseMode == EnumMouseMode.Idle)
+            {
+                oCurrentRatio = new Polyline();
+                FootwidthPointList = new List<Point>();
+                LAAbPointList = new List<Point>();
+                LAAsPointList = new List<Point>();
+                CalcanealPointList = new List<Point>();
+                QAnglelPointList = new List<Point>();
+                LabelList = new List<TextBlock>();
+
+                oCurrentHandPolygons = new List<Polygon>() { new Polygon(), new Polygon(), new Polygon(), new Polygon(), new Polygon() };
+
+                RefreshPolygons();
+                RefreshPointLabels();
+            }
+
+            Button clickedButton = (Button)sender;
+
+            var toolBar = (ToolBar)clickedButton.Parent;
+
+            foreach (var item in toolBar.Items)
+            {
+                if (item is Button button)
+                {
+                    button.ClearValue(Button.BackgroundProperty);
+                }
+            }
+
+
+            clickedButton.Background = Brushes.OrangeRed; // Highlight color
+
             //if (MouseMode == EnumMouseMode.Hand)
             //    this.Cursor = Cursors.Hand;
             //else if (MouseMode == EnumMouseMode.Ratio)
@@ -874,7 +1014,7 @@ namespace Footart
 
         }
 
-        private void btnAddHand_Click(object sender, RoutedEventArgs e)
+        private void btnAddHand_ClickOld(object sender, RoutedEventArgs e)
         {
             if (!System.IO.File.Exists(System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location) + "\\" + settingsFile + ".txt"))
             {
@@ -886,40 +1026,38 @@ namespace Footart
                 currentFileStream.Close();
             }
 
+            FootData hd = new FootData()
+            {
+                FileName = txlFileName.Text,
+                Name = txtName.Text,
+                Surname = txtSurname.Text,
+                Gender = (byte)(rbMale.IsChecked.Value == true ? 1 : 0),
+                SideOrBack = (byte)EnumSideOrBack.Width,
+                RightOrLeft = (byte)(rbHandR.IsChecked.Value == true ? (byte)EnumRightOrLeft.Right : (byte)EnumRightOrLeft.Left),//R=1;L=0
+                Optime = DateTime.Now,
+
+            };
+
             if (MouseMode == EnumMouseMode.FootWidth)
             {
 
                 if (FootwidthPointList.Count == 0)
                     return;
 
-                FootData hd = new FootData()
-                {
-                    FileName = txlFileName.Text,
-                    Name = txtName.Text,
-                    Surname = txtSurname.Text,
-                    Gender = (byte)(rbMale.IsChecked.Value == true ? 1 : 0),
-                    SideOrBack = (byte)EnumSideOrBack.Width,
-                    RightOrLeft = (byte)(rbHandR.IsChecked.Value == true ? (byte)EnumRightOrLeft.Right : (byte)EnumRightOrLeft.Left),//R=1;L=0
-                    Optime = DateTime.Now,
-                    Width = Convert.ToDouble(GetDistance(FootwidthPointList[0], FootwidthPointList[1]).ToString("N2")),
-                    Width_X1 = FootwidthPointList[0].X,
-                    Width_Y1 = FootwidthPointList[0].Y,
-                    Width_X2 = FootwidthPointList[1].X,
-                    Width_Y2 = FootwidthPointList[1].Y,
 
 
-                };
+                hd.Width = Convert.ToDouble(GetDistance(FootwidthPointList[0], FootwidthPointList[1]).ToString("N2"));
+                hd.Width_X1 = FootwidthPointList[0].X;
+                hd.Width_Y1 = FootwidthPointList[0].Y;
+                hd.Width_X2 = FootwidthPointList[1].X;
+                hd.Width_Y2 = FootwidthPointList[1].Y;
 
 
 
-                FootData existstHD = _HandDataList.Where(x => x.FileName == hd.FileName).FirstOrDefault();
-                if (existstHD != null)
-                    _HandDataList.Remove(existstHD);
 
-                _HandDataList.Add(hd);
 
-                DBHelper.WriteDataFile(hd);
-                InitializeHandData();
+
+
 
             }
             else if (MouseMode == EnumMouseMode.LAAb)
@@ -927,120 +1065,278 @@ namespace Footart
                 if (LAAbPointList.Count == 0)
                     return;
 
-                FootData hd = new FootData()
-                {
-                    FileName = txlFileName.Text,
-                    Name = txtName.Text,
-                    Surname = txtSurname.Text,
-                    Gender = (byte)(rbMale.IsChecked.Value == true ? 1 : 0),
-                    SideOrBack = (byte)EnumSideOrBack.Back,
-                    RightOrLeft = (byte)(rbHandR.IsChecked.Value == true ? (byte)EnumRightOrLeft.Right : (byte)EnumRightOrLeft.Left),//R=1;L=0
-                    Optime = DateTime.Now,
-                    LAA = Convert.ToDouble(GetAngle(LAAbPointList[2], LAAbPointList[4], LAAbPointList[3]).ToString("N2")),
-                    LAA_X1 = LAAbPointList[2].X,
-                    LAA_Y1 = LAAbPointList[2].Y,
-                    LAA_X2 = LAAbPointList[3].X,
-                    LAA_Y2 = LAAbPointList[3].Y,
-                    LAA_X3 = LAAbPointList[4].X,
-                    LAA_Y3 = LAAbPointList[4].Y,
 
-                };
+
+                hd.LAA = Convert.ToDouble(GetAngle(LAAbPointList[2], LAAbPointList[4], LAAbPointList[3]).ToString("N2"));
+                hd.LAA_X1 = LAAbPointList[2].X;
+                hd.LAA_Y1 = LAAbPointList[2].Y;
+                hd.LAA_X2 = LAAbPointList[3].X;
+                hd.LAA_Y2 = LAAbPointList[3].Y;
+                hd.LAA_X3 = LAAbPointList[4].X;
+                hd.LAA_Y3 = LAAbPointList[4].Y;
 
 
 
-                FootData existstHD = _HandDataList.Where(x => x.FileName == hd.FileName).FirstOrDefault();
-                if (existstHD != null)
-                    _HandDataList.Remove(existstHD);
 
-                _HandDataList.Add(hd);
 
-                DBHelper.WriteDataFile(hd);
-                InitializeHandData();
+
             }
             else if (MouseMode == EnumMouseMode.LAAs)
             {
                 if (LAAsPointList.Count == 0)
                     return;
 
-                FootData hd = new FootData()
-                {
-                    FileName = txlFileName.Text,
-                    Name = txtName.Text,
-                    Surname = txtSurname.Text,
-                    Gender = (byte)(rbMale.IsChecked.Value == true ? 1 : 0),
-                    SideOrBack = (byte)EnumSideOrBack.Side,
-                    RightOrLeft = (byte)(rbHandR.IsChecked.Value == true ? (byte)EnumRightOrLeft.Right : (byte)EnumRightOrLeft.Left),//R=1;L=0
-                    Optime = DateTime.Now,
-                    LAA = Convert.ToDouble(GetAngle(LAAsPointList[0], LAAsPointList[2], LAAsPointList[1]).ToString("N2")),
-                    LAA_X1 = LAAsPointList[0].X,
-                    LAA_Y1 = LAAsPointList[0].Y,
-                    LAA_X2 = LAAsPointList[1].X,
-                    LAA_Y2 = LAAsPointList[1].Y,
-                    LAA_X3 = LAAsPointList[2].X,
-                    LAA_Y3 = LAAsPointList[2].Y,
 
 
-                };
+                hd.LAA = Convert.ToDouble(GetAngle(LAAsPointList[0], LAAsPointList[2], LAAsPointList[1]).ToString("N2"));
+                hd.LAA_X1 = LAAsPointList[0].X;
+                hd.LAA_Y1 = LAAsPointList[0].Y;
+                hd.LAA_X2 = LAAsPointList[1].X;
+                hd.LAA_Y2 = LAAsPointList[1].Y;
+                hd.LAA_X3 = LAAsPointList[2].X;
+                hd.LAA_Y3 = LAAsPointList[2].Y;
 
 
 
-                FootData existstHD = _HandDataList.Where(x => x.FileName == hd.FileName).FirstOrDefault();
-                if (existstHD != null)
-                    _HandDataList.Remove(existstHD);
 
-                _HandDataList.Add(hd);
 
-                DBHelper.WriteDataFile(hd);
-                InitializeHandData();
             }
             else if (MouseMode == EnumMouseMode.Calcaneal)
             {
-                if (CalcanealPointList.Count == 0)
+                if (CalcanealPointList.Count != 4)
                     return;
+
                 Point kesisimNoktasi = FindIntersection(CalcanealPointList[0], CalcanealPointList[1], CalcanealPointList[2], CalcanealPointList[3]);
 
                 double dAngle = Convert.ToDouble(GetAngle(CalcanealPointList[1], CalcanealPointList[3], kesisimNoktasi).ToString("N2"));
 
-                FootData hd = new FootData()
-                {
-                    FileName = txlFileName.Text,
-                    Name = txtName.Text,
-                    Surname = txtSurname.Text,
-                    Gender = (byte)(rbMale.IsChecked.Value == true ? 1 : 0),
-                    SideOrBack = (byte)EnumSideOrBack.Side,
-                    RightOrLeft = (byte)(rbHandR.IsChecked.Value == true ? (byte)EnumRightOrLeft.Right : (byte)EnumRightOrLeft.Left),//R=1;L=0
-                    Optime = DateTime.Now,
-                    Calcaneal = dAngle,
-                    Calcaneal_V_X1 = CalcanealPointList[0].X,
-                    Calcaneal_V_Y1 = CalcanealPointList[0].Y,
-                    Calcaneal_V_X2 = CalcanealPointList[1].X,
-                    Calcaneal_V_Y2 = CalcanealPointList[1].Y,
-                    Calcaneal_X1 = CalcanealPointList[2].X,
-                    Calcaneal_Y1 = CalcanealPointList[2].Y,
-                    Calcaneal_X2 = CalcanealPointList[3].X,
-                    Calcaneal_Y2 = CalcanealPointList[3].Y,
 
-
-                };
+                hd.Calcaneal = dAngle;
+                hd.Calcaneal_V_X1 = CalcanealPointList[0].X;
+                hd.Calcaneal_V_Y1 = CalcanealPointList[0].Y;
+                hd.Calcaneal_V_X2 = CalcanealPointList[1].X;
+                hd.Calcaneal_V_Y2 = CalcanealPointList[1].Y;
+                hd.Calcaneal_X1 = CalcanealPointList[2].X;
+                hd.Calcaneal_Y1 = CalcanealPointList[2].Y;
+                hd.Calcaneal_X2 = CalcanealPointList[3].X;
+                hd.Calcaneal_Y2 = CalcanealPointList[3].Y;
 
 
 
-                FootData existstHD = _HandDataList.Where(x => x.FileName == hd.FileName).FirstOrDefault();
-                if (existstHD != null)
-                    _HandDataList.Remove(existstHD);
-
-                _HandDataList.Add(hd);
-
-                DBHelper.WriteDataFile(hd);
-                InitializeHandData();
             }
+            else if (MouseMode == EnumMouseMode.QAngle)
+            {
+                if (QAnglelPointList.Count != 4)
+                    return;
+
+                Point kesisimNoktasi = FindIntersection(QAnglelPointList[0], QAnglelPointList[1], QAnglelPointList[2], QAnglelPointList[3]);
+
+                double dAngle = Convert.ToDouble(GetAngle(QAnglelPointList[1], QAnglelPointList[3], kesisimNoktasi).ToString("N2"));
+
+                if (hd.RightOrLeft == 1)
+                {
+                    hd.QAngle_Left = dAngle;
+                    hd.QAngle_Left_V_X1 = QAnglelPointList[0].X;
+                    hd.QAngle_Left_V_Y1 = QAnglelPointList[0].Y;
+                    hd.QAngle_Left_V_X2 = QAnglelPointList[1].X;
+                    hd.QAngle_Left_V_Y2 = QAnglelPointList[1].Y;
+                    hd.QAngle_Left_X1 = QAnglelPointList[2].X;
+                    hd.QAngle_Left_Y1 = QAnglelPointList[2].Y;
+                    hd.QAngle_Left_X2 = QAnglelPointList[3].X;
+                    hd.QAngle_Left_Y2 = QAnglelPointList[3].Y;
+                }
+                else
+                {
+                    hd.QAngle_Right = dAngle;
+                    hd.QAngle_Right_V_X1 = QAnglelPointList[0].X;
+                    hd.QAngle_Right_V_Y1 = QAnglelPointList[0].Y;
+                    hd.QAngle_Right_V_X2 = QAnglelPointList[1].X;
+                    hd.QAngle_Right_V_Y2 = QAnglelPointList[1].Y;
+                    hd.QAngle_Right_X1 = QAnglelPointList[2].X;
+                    hd.QAngle_Right_Y1 = QAnglelPointList[2].Y;
+                    hd.QAngle_Right_X2 = QAnglelPointList[3].X;
+                    hd.QAngle_Right_Y2 = QAnglelPointList[3].Y;
+
+                }
+
+
+
+
+
+            }
+
+            FootData existstHD = _HandDataList.Where(x => x.FileName == hd.FileName).FirstOrDefault();
+            if (existstHD != null)
+                _HandDataList.Remove(existstHD);
+
+            _HandDataList.Add(hd);
+
+            DBHelper.WriteDataFile(hd);
+            InitializeFootData();
+
 
 
 
         }
 
+        private void btnAddHand_Click(object sender, RoutedEventArgs e)
+        {
 
 
+            using (var context = new AppDbContext())
+            {
+                var side = rbHandR.IsChecked.Value == true ? "RIGHT" : "LEFT";
+                StudyData hd = context.StudyData.Where(x => x.Title == txtTitle.Text && x.DataType == (int)MouseMode && x.Side == side).FirstOrDefault();
+
+                if (hd is null)
+                    hd = new StudyData()
+                    {
+                        FileName = txlFileName.Text,
+                        Title = txtTitle.Text,
+                        Gender = rbMale.IsChecked.Value == true ? "MALE" : "FEMALE",
+                        Side = side,
+                        Optime = DateTime.Now,
+                        DataType = (int)MouseMode,
+                        Id = Guid.NewGuid(),
+
+
+                    };
+
+
+
+                if (MouseMode == EnumMouseMode.FootWidth)
+                {
+
+                    if (FootwidthPointList.Count == 0)
+                        return;
+
+                    hd.StudyDataValue = Convert.ToDouble(GetDistance(FootwidthPointList[0], FootwidthPointList[1]).ToString("N2"));
+                    hd.StudyDataText = "Genişlik";
+                    hd.StudyDataSource.Clear();
+                    hd.StudyDataSource.Add(new StudyDataPoint { StudyDataId = hd.Id, X = FootwidthPointList[0].X, Y = FootwidthPointList[0].Y });
+                    hd.StudyDataSource.Add(new StudyDataPoint { StudyDataId = hd.Id, X = FootwidthPointList[1].X, Y = FootwidthPointList[1].Y });
+
+                }
+                else if (MouseMode == EnumMouseMode.LAAb)
+                {
+                    if (LAAbPointList.Count == 0)
+                        return;
+
+
+
+                    hd.StudyDataValue = Convert.ToDouble(GetAngle(LAAbPointList[2], LAAbPointList[4], LAAbPointList[3]).ToString("N2"));
+                    hd.StudyDataText = "LAAb";
+                    hd.StudyDataSource.Clear();
+                    hd.StudyDataSource.Add(new StudyDataPoint { StudyDataId = hd.Id, X = LAAbPointList[2].X, Y = LAAbPointList[2].Y });
+                    hd.StudyDataSource.Add(new StudyDataPoint { StudyDataId = hd.Id, X = LAAbPointList[3].X, Y = LAAbPointList[3].Y });
+                    hd.StudyDataSource.Add(new StudyDataPoint { StudyDataId = hd.Id, X = LAAbPointList[4].X, Y = LAAbPointList[4].Y });
+
+                }
+                else if (MouseMode == EnumMouseMode.LAAs)
+                {
+                    if (LAAsPointList.Count == 0)
+                        return;
+
+
+
+                    hd.StudyDataValue = Convert.ToDouble(GetAngle(LAAsPointList[0], LAAsPointList[2], LAAsPointList[1]).ToString("N2"));
+                    hd.StudyDataText = "LAAs";
+                    hd.StudyDataSource.Clear();
+                    hd.StudyDataSource.Add(new StudyDataPoint { StudyDataId = hd.Id, X = LAAsPointList[0].X, Y = LAAsPointList[0].Y });
+                    hd.StudyDataSource.Add(new StudyDataPoint { StudyDataId = hd.Id, X = LAAsPointList[1].X, Y = LAAsPointList[1].Y });
+                    hd.StudyDataSource.Add(new StudyDataPoint { StudyDataId = hd.Id, X = LAAsPointList[2].X, Y = LAAsPointList[2].Y });
+
+
+
+
+
+                }
+                else if (MouseMode == EnumMouseMode.Calcaneal)
+                {
+                    if (CalcanealPointList.Count != 4)
+                        return;
+
+                    Point kesisimNoktasi = FindIntersection(CalcanealPointList[0], CalcanealPointList[1], CalcanealPointList[2], CalcanealPointList[3]);
+
+                    double dAngle = Convert.ToDouble(GetAngle(CalcanealPointList[1], CalcanealPointList[3], kesisimNoktasi).ToString("N2"));
+
+
+                    hd.StudyDataValue = dAngle;
+                    hd.StudyDataText = "Calcaneal";
+                    hd.StudyDataSource.Clear();
+                    hd.StudyDataSource.Add(new StudyDataPoint { StudyDataId = hd.Id, X = CalcanealPointList[0].X, Y = CalcanealPointList[0].Y });
+                    hd.StudyDataSource.Add(new StudyDataPoint { StudyDataId = hd.Id, X = CalcanealPointList[1].X, Y = CalcanealPointList[1].Y });
+                    hd.StudyDataSource.Add(new StudyDataPoint { StudyDataId = hd.Id, X = CalcanealPointList[2].X, Y = CalcanealPointList[2].Y });
+                    hd.StudyDataSource.Add(new StudyDataPoint { StudyDataId = hd.Id, X = CalcanealPointList[3].X, Y = CalcanealPointList[3].Y });
+
+
+
+                }
+                else if (MouseMode == EnumMouseMode.QAngle)
+                {
+                    if (QAnglelPointList.Count != 4)
+                        return;
+
+                    Point kesisimNoktasi = FindIntersection(QAnglelPointList[0], QAnglelPointList[1], QAnglelPointList[2], QAnglelPointList[3]);
+
+                    double dAngle = Convert.ToDouble(GetAngle(QAnglelPointList[1], QAnglelPointList[3], kesisimNoktasi).ToString("N2"));
+
+
+                    hd.StudyDataValue = dAngle;
+                    hd.StudyDataText = "QAngle";
+                    hd.StudyDataSource.Clear();
+                    hd.StudyDataSource.Add(new StudyDataPoint { StudyDataId = hd.Id, X = QAnglelPointList[0].X, Y = QAnglelPointList[0].Y });
+                    hd.StudyDataSource.Add(new StudyDataPoint { StudyDataId = hd.Id, X = QAnglelPointList[1].X, Y = QAnglelPointList[1].Y });
+                    hd.StudyDataSource.Add(new StudyDataPoint { StudyDataId = hd.Id, X = QAnglelPointList[2].X, Y = QAnglelPointList[2].Y });
+                    hd.StudyDataSource.Add(new StudyDataPoint { StudyDataId = hd.Id, X = QAnglelPointList[3].X, Y = QAnglelPointList[3].Y });
+
+
+                }
+
+                //FootData existstHD = _HandDataList.Where(x => x.FileName == hd.FileName).FirstOrDefault();
+                //if (existstHD != null)
+                //    _HandDataList.Remove(existstHD);
+
+                //_HandDataList.Add(hd);
+
+                //DBHelper.WriteDataFile(hd);
+                //InitializeHandData();
+
+
+                // Yeni veri ekle
+                context.StudyData.Add(hd);
+                context.SaveChanges();
+                RefreshGrid();
+                //// Verileri oku
+                //var data = context.StudyData.ToList();
+                //foreach (var item in data)
+                //{
+                //    Console.WriteLine($"Id: {item.Id}, Title: {item.Title}");
+                //}
+            }
+
+
+        }
+
+        private void txtTitle_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            RefreshGrid();
+        }
+
+        private void RefreshGrid()
+        {
+            List<StudyData> hd = new List<StudyData>();
+            using (var context = new AppDbContext())
+            {
+                if (txtTitle.Text != "")
+                    hd = context.StudyData.Where(x => x.Title == txtTitle.Text).ToList();
+                else
+                    hd = context.StudyData.ToList();
+
+            }
+
+            lvHandList.ItemsSource = hd.OrderByDescending(x => x.Optime);
+        }
         private void btnUndo_Click(object sender, RoutedEventArgs e)
         {
             if (MouseMode == EnumMouseMode.FootWidth)
@@ -1076,6 +1372,13 @@ namespace Footart
                     CalcanealPointList.Remove(CalcanealPointList[CalcanealPointList.Count - 1]);
 
             }
+            else if (MouseMode == EnumMouseMode.QAngle)
+            {
+
+                if (QAnglelPointList.Count > 0)
+                    QAnglelPointList.Remove(QAnglelPointList[QAnglelPointList.Count - 1]);
+
+            }
 
             RefreshPolygons();
             RefreshPointLabels();
@@ -1104,7 +1407,7 @@ namespace Footart
             {
                 model.Path = dlg.SelectedPath;
                 DBHelper.CreateDataFile(model.Path + "\\", projectName);
-                InitializeHandData();
+                InitializeFootData();
             }
         }
 

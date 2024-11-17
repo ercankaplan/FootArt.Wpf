@@ -92,6 +92,26 @@ namespace Footart.Models
         public double Calcaneal_X2 { get; set; }
         public double Calcaneal_Y2 { get; set; }
 
+        public double QAngle_Left { get; set; }
+        public double QAngle_Left_V_X1 { get; set; }
+        public double QAngle_Left_V_Y1 { get; set; }
+        public double QAngle_Left_V_X2 { get; set; }
+        public double QAngle_Left_V_Y2 { get; set; }
+        public double QAngle_Left_X1 { get; set; }
+        public double QAngle_Left_Y1 { get; set; }
+        public double QAngle_Left_X2 { get; set; }
+        public double QAngle_Left_Y2 { get; set; }
+
+        public double QAngle_Right { get; set; } 
+        public double QAngle_Right_V_X1 { get; set; }
+        public double QAngle_Right_V_Y1 { get; set; }
+        public double QAngle_Right_V_X2 { get; set; }
+        public double QAngle_Right_V_Y2 { get; set; }
+        public double QAngle_Right_X1 { get; set; }
+        public double QAngle_Right_Y1 { get; set; }
+        public double QAngle_Right_X2 { get; set; }
+        public double QAngle_Right_Y2 { get; set; }
+
     }
 
 }
