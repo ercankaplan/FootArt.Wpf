@@ -274,8 +274,7 @@
                 <ListView x:Name="lvHandList" ItemsSource="{Binding ElementName=WinUI, Path=FootDataList}"  Grid.ColumnSpan="4" Grid.Row="15" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" >
                     <ListView.View>
                         <GridView>
-                        
-                            <GridViewColumn Header="Title" Width="auto" DisplayMemberBinding="{Binding Path=Title}" ></GridViewColumn>
+                            <GridViewColumn Header="TitleVal" Width="auto" DisplayMemberBinding="{Binding Path=TitleVal}" ></GridViewColumn>
                             <GridViewColumn Header="DataType" Width="auto" DisplayMemberBinding="{Binding Path=StudyDataText}" ></GridViewColumn>
                             <GridViewColumn Header="RightOrLeft" Width="auto" DisplayMemberBinding="{Binding Path=Side}" ></GridViewColumn>
                             <GridViewColumn Header="Value" Width="auto" DisplayMemberBinding="{Binding Path=StudyDataValue}" ></GridViewColumn>
@@ -283,6 +282,7 @@
                             <GridViewColumn Header="DataType" Width="auto" DisplayMemberBinding="{Binding Path=DataType}" ></GridViewColumn>
                             <GridViewColumn Header="Gender" Width="auto" DisplayMemberBinding="{Binding Path=Gender}" ></GridViewColumn>
                             <GridViewColumn Header="Optime" Width="auto" DisplayMemberBinding="{Binding Path=Optime , StringFormat=\{0:dd-MM-yyyy HH:mm\}}" ></GridViewColumn>
+                            <GridViewColumn Header="Title" Width="auto" DisplayMemberBinding="{Binding Path=Title}" ></GridViewColumn>
                             <GridViewColumn Header="Actions" Width="auto">
                                 <GridViewColumn.CellTemplate>
                                     <DataTemplate>

@@ -25,6 +25,7 @@ namespace FootArt.Data.Entities
 
         public string StudyDataText { get; set; }
         public List<StudyDataPoint> StudyDataSource { get; set; } = new List<StudyDataPoint>();
+
     }
 
     public class StudyDataPoint

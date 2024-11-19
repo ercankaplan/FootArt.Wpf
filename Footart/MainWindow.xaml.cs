@@ -27,12 +27,12 @@ namespace Footart
 {
     public enum EnumMouseMode
     {
-        Idle=0,
-        Zoom =1,
-        Ratio = 2 ,
-        FootWidth =3,
-        LAAb =4,
-        LAAs =5,
+        Idle = 0,
+        Zoom = 1,
+        Ratio = 2,
+        FootWidth = 3,
+        LAAb = 4,
+        LAAs = 5,
         Calcaneal = 6,
         QAngle = 7
     }
@@ -342,10 +342,10 @@ namespace Footart
 
             if (MouseMode == EnumMouseMode.Calcaneal)
             {
-                if (CalcanealPointList.Count == 1)
-                {
-                    p.X = CalcanealPointList[0].X;
-                }
+                //if (CalcanealPointList.Count == 1)
+                //{
+                //    p.X = CalcanealPointList[0].X;
+                //}
 
                 if (CalcanealPointList.Count != 4)
                 {
@@ -360,10 +360,10 @@ namespace Footart
 
             if (MouseMode == EnumMouseMode.QAngle)
             {
-                if (QAnglelPointList.Count == 1)
-                {
-                    p.X = QAnglelPointList[0].X;
-                }
+                //if (QAnglelPointList.Count == 1)
+                //{
+                //    p.X = QAnglelPointList[0].X;
+                //}
 
                 if (QAnglelPointList.Count != 4)
                 {
@@ -546,8 +546,8 @@ namespace Footart
                     Point lastPoint = QAnglelPointList[QAnglelPointList.Count - 1];
                     oTempIRLine = new Line();
 
-                    if (QAnglelPointList.Count == 1)
-                        p.X = QAnglelPointList[0].X;
+                    //if (QAnglelPointList.Count == 1)
+                    //    p.X = QAnglelPointList[0].X;
 
                     if (QAnglelPointList.Count() % 2 != 0)
                         DrawLine(oTempIRLine, lastPoint, p, ACTIVE_LINE_COLOR);
@@ -733,7 +733,7 @@ namespace Footart
                     txlQAngle.Text = dAngle.ToString();
 
                     txtKesisimAngle.Text = dAngle.ToString();
-             
+
 
                     Canvas.SetTop(txtKesisimAngle, kesisimNoktasi.Y + 3);
                     Canvas.SetLeft(txtKesisimAngle, kesisimNoktasi.X + 3);
@@ -1001,6 +1001,8 @@ namespace Footart
             //else
             //    this.Cursor = Cursors.Arrow;
 
+            RefreshGrid();
+
 
         }
 
@@ -1181,7 +1183,7 @@ namespace Footart
 
         private void btnAddHand_Click(object sender, RoutedEventArgs e)
         {
-
+            Guid nwId = Guid.NewGuid();
 
             using (var context = new AppDbContext())
             {
@@ -1197,7 +1199,7 @@ namespace Footart
                         Side = side,
                         Optime = DateTime.Now,
                         DataType = (int)MouseMode,
-                        Id = Guid.NewGuid(),
+                        Id = nwId,
 
 
                     };
@@ -1304,7 +1306,9 @@ namespace Footart
 
 
                 // Yeni veri ekle
-                context.StudyData.Add(hd);
+                if (hd.Id == nwId)
+                    context.StudyData.Add(hd);
+
                 context.SaveChanges();
                 RefreshGrid();
                 //// Verileri oku
@@ -1335,7 +1339,23 @@ namespace Footart
 
             }
 
-            lvHandList.ItemsSource = hd.OrderByDescending(x => x.Optime);
+
+
+            lvHandList.ItemsSource = hd.Select(x => new
+            {
+                x.Gender,
+                x.Title,
+                x.Optime,
+                x.Id,
+                x.FileName,
+                x.StudyDataValue,
+                x.StudyDataText,
+                x.DataType,
+                x.StudyDataSource,
+                x.Side,
+                TitleVal = x.Title.PadLeft(3, '0')
+            }).OrderByDescending(x => x.TitleVal).ThenBy(x=> x.StudyDataText);
+
         }
         private void btnUndo_Click(object sender, RoutedEventArgs e)
         {
