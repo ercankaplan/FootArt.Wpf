@@ -522,8 +522,8 @@ namespace Footart
                     Point lastPoint = CalcanealPointList[CalcanealPointList.Count - 1];
                     oTempIRLine = new Line();
 
-                    if (CalcanealPointList.Count == 1)
-                        p.X = CalcanealPointList[0].X;
+                    //if (CalcanealPointList.Count == 1)
+                    //    p.X = CalcanealPointList[0].X;
 
                     if (CalcanealPointList.Count() % 2 != 0)
                         DrawLine(oTempIRLine, lastPoint, p, ACTIVE_LINE_COLOR);
