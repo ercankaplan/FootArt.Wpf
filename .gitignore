@@ -361,3 +361,5 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+/Footart/bin/Debug/Footart.exe
+/Footart/bin/Debug/Footart.pdb
