@@ -61,6 +61,9 @@
             <Button  Click="btnUndo_Click" Name="btnUndo">
                 <Image HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Source="images\undo.ico" />
             </Button>
+            <Button  Click="btnMode_Click" DataContext="8"  Name="btnFaceRatioMode">
+                <Image HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Source="images\aspect-ratio.png" />
+            </Button>
             <Button  Click="btnMode_Click" DataContext="2"  Name="btnRatioMode">
                 <Image HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Source="images\ruler.png" />
             </Button>
@@ -159,7 +162,12 @@
                     <RowDefinition Height="25"></RowDefinition>
                     <RowDefinition Height="25"></RowDefinition>
                     <RowDefinition Height="5"></RowDefinition>
-                    <RowDefinition Height="*"></RowDefinition>
+                    <RowDefinition Height="150"></RowDefinition>
+                    <RowDefinition Height="25"></RowDefinition>
+                    <RowDefinition Height="25"></RowDefinition>
+                    <RowDefinition Height="25"></RowDefinition>
+                    <RowDefinition Height="5"></RowDefinition>
+                    <RowDefinition Height="150"></RowDefinition>
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="10"></ColumnDefinition>
@@ -271,7 +279,7 @@
                 </StackPanel>
                 <Button x:Name="btnAddHand" Content="Add" Grid.Column="2" Grid.Row="13" HorizontalAlignment="Stretch" VerticalAlignment="Top" Height="22" Click="btnAddHand_Click"></Button>
                 <Separator Grid.Column="0" Grid.ColumnSpan="4" Grid.Row="14"></Separator>
-                <ListView x:Name="lvHandList" ItemsSource="{Binding ElementName=WinUI, Path=FootDataList}"  Grid.ColumnSpan="4" Grid.Row="15" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" >
+                <ListView x:Name="lvHandList" ItemsSource="{Binding ElementName=WinUI, Path=FootDataList}" Height="200"  Grid.ColumnSpan="4" Grid.Row="15" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" >
                     <ListView.View>
                         <GridView>
                             <GridViewColumn Header="TitleVal" Width="auto" DisplayMemberBinding="{Binding Path=TitleVal}" ></GridViewColumn>
@@ -293,6 +301,32 @@
                         </GridView>
                     </ListView.View>
                 </ListView>
+                <Separator Grid.Column="0" Grid.ColumnSpan="4" Grid.Row="16"></Separator>
+
+                <TextBlock Name="txbFaceRatio" Text="Ratio" Grid.Column="1" Grid.Row="17"></TextBlock>
+                <TextBlock Name="txtFaceRatioVal" Height="22" Grid.Row="17" Grid.Column="2" />
+
+                <Button x:Name="btnAddFaceRatio" Content="Add" Grid.Column="2" Grid.Row="18" HorizontalAlignment="Stretch" VerticalAlignment="Top" Height="22" Click="btnAddFaceRatio_Click"></Button>
+                <Separator Grid.Column="0" Grid.ColumnSpan="4" Grid.Row="19"></Separator>
+                <ListView x:Name="lvFaceRatioList" ItemsSource="{Binding ElementName=WinUI, Path=FaceRatioDataList}"  Grid.ColumnSpan="4" Grid.Row="20" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" >
+                    <ListView.View>
+                        <GridView>
+                            <GridViewColumn Header="Title" Width="auto" DisplayMemberBinding="{Binding Path=Title}" ></GridViewColumn>
+                            <GridViewColumn Header="FaceRatio" Width="auto" DisplayMemberBinding="{Binding Path=FaceRatio}" ></GridViewColumn>
+                            <GridViewColumn Header="Width" Width="auto" DisplayMemberBinding="{Binding Path=Width}" ></GridViewColumn>
+                            <GridViewColumn Header="Height" Width="auto" DisplayMemberBinding="{Binding Path=Height}" ></GridViewColumn>
+                         
+                            <GridViewColumn Header="Actions" Width="auto">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Button Content="Delete" Click="DeleteFaceRatio_Click" Tag="{Binding Path=Id}" />
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+
             </Grid>
         </DockPanel>
     </Grid>

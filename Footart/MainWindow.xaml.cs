@@ -34,7 +34,8 @@ namespace Footart
         LAAb = 4,
         LAAs = 5,
         Calcaneal = 6,
-        QAngle = 7
+        QAngle = 7,
+        FaceRatio = 8,
     }
     /// <summary>
     /// Interaction logic for MainWindow.xaml
@@ -45,6 +46,7 @@ namespace Footart
         private static List<FootData> _HandDataList;
 
         private static List<StudyData> _FootDataList;
+        private static List<FaceRatioData> _FaceRatioDataList;
 
         public static List<FootData> HandDataList
         {
@@ -52,6 +54,11 @@ namespace Footart
             set { MainWindow._HandDataList = value; }
         }
 
+        public static List<FaceRatioData> FaceRatioDataList
+        {
+            get { return MainWindow._FaceRatioDataList; }
+            set { MainWindow._FaceRatioDataList = value; }
+        }
         public static List<StudyData> FootDataList
         {
             get { return MainWindow._FootDataList; }
@@ -88,6 +95,7 @@ namespace Footart
         public static List<Point> LAAsPointList;
         public static List<Point> CalcanealPointList;
         public static List<Point> QAnglelPointList;
+        public static List<Point> FaceRatioPointList;
 
         //public static Double[] Alanlar = new Double[5];
 
@@ -199,6 +207,7 @@ namespace Footart
             txbCalcanealValue.Text = "";
             txlLAA.Text = "";
             txlQAngle.Text = "";
+            txtFaceRatioVal.Text = "";
 
             oCurrentRatio = new Polyline();
             FootwidthPointList = new List<Point>();
@@ -206,6 +215,7 @@ namespace Footart
             LAAsPointList = new List<Point>();
             CalcanealPointList = new List<Point>();
             QAnglelPointList = new List<Point>();
+            FaceRatioPointList = new List<Point>();
             LabelList = new List<TextBlock>();
 
             oCurrentHandPolygons = new List<Polygon>() { new Polygon(), new Polygon(), new Polygon(), new Polygon(), new Polygon() };
@@ -368,6 +378,22 @@ namespace Footart
                 if (QAnglelPointList.Count != 4)
                 {
                     QAnglelPointList.Add(p);
+                    DrawPoint(p, ACTIVE_LINE_COLOR);
+                    RefreshPolygons();
+                    RefreshPointLabels();
+                }
+
+            }
+            if (MouseMode == EnumMouseMode.FaceRatio)
+            {
+                //if (QAnglelPointList.Count == 1)
+                //{
+                //    p.X = QAnglelPointList[0].X;
+                //}
+
+                if (FaceRatioPointList.Count != 4)
+                {
+                    FaceRatioPointList.Add(p);
                     DrawPoint(p, ACTIVE_LINE_COLOR);
                     RefreshPolygons();
                     RefreshPointLabels();
@@ -560,6 +586,49 @@ namespace Footart
                     }
                 }
             }
+            else if (MouseMode == EnumMouseMode.FaceRatio)
+            {
+                if (FaceRatioPointList.Count > 0 && FaceRatioPointList.Count < 4)
+                {
+                    if (oTempIRLine != null)
+                        cnvImage.Children.Remove(oTempIRLine);
+
+                    Point lastPoint = FaceRatioPointList[FaceRatioPointList.Count - 1];
+                    oTempIRLine = new Line();
+
+                    //if (FaceRatioPointList.Count == 1)
+                    //{
+                    //    p.X = FaceRatioPointList[0].X;
+                    //}
+
+                    //if (FaceRatioPointList.Count == 3)
+                    //{
+                    //    p.Y = FaceRatioPointList[2].Y;
+                    //}
+
+                    if (FaceRatioPointList.Count() % 2 != 0)
+                        DrawLine(oTempIRLine, lastPoint, p, ACTIVE_LINE_COLOR);
+
+                    if (FaceRatioPointList.Count() == 3)
+                    {
+                        kesisimNoktasi = FindIntersection(FaceRatioPointList[0], FaceRatioPointList[1], FaceRatioPointList[2], p);
+
+                        double a = FaceRatioPointList[0].X - FaceRatioPointList[1].X;
+                        double b = FaceRatioPointList[0].Y - FaceRatioPointList[1].Y;
+                        double height = Math.Sqrt(a * a + b * b);
+
+                        double c = FaceRatioPointList[2].X - p.X;
+                        double d = FaceRatioPointList[2].Y - p.Y;
+                        double width = Math.Sqrt(c * c + d * d);
+
+                        dRatio =width  /height ;
+
+                        txtFaceRatioVal.Text = dRatio.ToString("N2");
+
+
+                    }
+                }
+            }
 
 
 
@@ -741,6 +810,47 @@ namespace Footart
                 }
             }
 
+            if (MouseMode == EnumMouseMode.FaceRatio)
+            {
+                for (int i = 0; i < FaceRatioPointList.Count; i++)
+                {
+                    DrawPoint(FaceRatioPointList[i], RATIO_LINE_COLOR);
+
+                    if (i < FaceRatioPointList.Count - 1)
+                        if (i != 1)
+                            DrawLine(new Line(), FaceRatioPointList[i], FaceRatioPointList[i + 1], RATIO_LINE_COLOR);
+                }
+
+                if (FaceRatioPointList.Count == 4)
+                {
+                    Point kesisimNoktasi = FindIntersection(FaceRatioPointList[0], FaceRatioPointList[1], FaceRatioPointList[2], FaceRatioPointList[3]);
+
+                    double dAngle = Convert.ToDouble(GetAngle(FaceRatioPointList[1], FaceRatioPointList[3], kesisimNoktasi).ToString("N2"));
+
+                    txlQAngle.Text = dAngle.ToString();
+
+                    txtKesisimAngle.Text = dAngle.ToString() + "°";
+
+
+                    double a = FaceRatioPointList[0].X - FaceRatioPointList[1].X;
+                    double b = FaceRatioPointList[0].Y - FaceRatioPointList[1].Y;
+                    double height = Math.Sqrt(a * a + b * b);
+
+                    double c = FaceRatioPointList[2].X - FaceRatioPointList[3].X;
+                    double d = FaceRatioPointList[2].Y - FaceRatioPointList[3].Y;
+                    double width = Math.Sqrt(c * c + d * d);
+
+                    dRatio =width  /height ;
+
+                    txtFaceRatioVal.Text = dRatio.ToString("N2");
+
+
+                    Canvas.SetTop(txtKesisimAngle, kesisimNoktasi.Y + 3);
+                    Canvas.SetLeft(txtKesisimAngle, kesisimNoktasi.X + 3);
+
+                }
+            }
+
             foreach (var p in oCurrentRatio.Points)
             {
                 DrawPoint(p, RATIO_LINE_COLOR);
@@ -765,6 +875,26 @@ namespace Footart
                     if (studyData != null)
                     {
                         db.StudyData.Remove(studyData);
+                        db.SaveChanges();
+                    }
+                }
+
+                RefreshGrid();
+            }
+        }
+
+        private void DeleteFaceRatio_Click(object sender, RoutedEventArgs e)
+        {
+            if (((Button)sender).Tag is Guid)
+            {
+                Guid id = new Guid(((Button)sender).Tag.ToString());
+
+                using (var db = new AppDbContext())
+                {
+                    var faceData = db.FaceRatioData.FirstOrDefault(x => x.Id == id);
+                    if (faceData != null)
+                    {
+                        db.FaceRatioData.Remove(faceData);
                         db.SaveChanges();
                     }
                 }
@@ -913,7 +1043,7 @@ namespace Footart
             double dAngle = Convert.ToDouble(GetAngle(e1, e2, kesisimNoktasi).ToString("N2"));
 
 
-            txtKesisimAngle.Text = dAngle.ToString();
+            txtKesisimAngle.Text = dAngle.ToString() + "°";
             txtKesisimAngle.Foreground = Brushes.Black;
             txtKesisimAngle.FontSize = 24;
             txtKesisimAngle.FontWeight = FontWeights.Bold;
@@ -1295,6 +1425,7 @@ namespace Footart
 
                 }
 
+
                 //FootData existstHD = _HandDataList.Where(x => x.FileName == hd.FileName).FirstOrDefault();
                 //if (existstHD != null)
                 //    _HandDataList.Remove(existstHD);
@@ -1322,6 +1453,50 @@ namespace Footart
 
         }
 
+        private void btnAddFaceRatio_Click(object sender, RoutedEventArgs e)
+        {
+            Guid nwId = Guid.NewGuid();
+
+            if (MouseMode != EnumMouseMode.FaceRatio)
+                return;
+
+            if (FaceRatioPointList.Count != 4)
+                return;
+
+            using (var context = new AppDbContext())
+            {
+                FaceRatioData fd = context.FaceRatioData.Where(x => x.Title == txtTitle.Text).FirstOrDefault();
+
+                if (fd is null)
+                    fd = new FaceRatioData() { Id = nwId , Title = txtTitle.Text };
+
+
+                double a = FaceRatioPointList[0].X - FaceRatioPointList[1].X;
+                double b = FaceRatioPointList[0].Y - FaceRatioPointList[1].Y;
+                double height = Math.Sqrt(a * a + b * b);
+
+                double c = FaceRatioPointList[2].X - FaceRatioPointList[3].X;
+                double d = FaceRatioPointList[2].Y - FaceRatioPointList[3].Y;
+                double width = Math.Sqrt(c * c + d * d);
+
+                dRatio =  width / height;
+
+
+
+                fd.FaceRatio = Convert.ToDecimal(dRatio);
+                fd.Height = Convert.ToDecimal(height);
+                fd.Optime = DateTime.Now;
+                fd.Width = Convert.ToDecimal(width);
+
+                if (fd.Id == nwId)
+                    context.FaceRatioData.Add(fd);
+
+                context.SaveChanges();
+                RefreshGrid();
+
+            }
+
+        }
         private void txtTitle_TextChanged(object sender, TextChangedEventArgs e)
         {
             RefreshGrid();
@@ -1339,8 +1514,6 @@ namespace Footart
 
             }
 
-
-
             lvHandList.ItemsSource = hd.Select(x => new
             {
                 x.Gender,
@@ -1354,7 +1527,24 @@ namespace Footart
                 x.StudyDataSource,
                 x.Side,
                 TitleVal = x.Title.PadLeft(3, '0')
-            }).OrderByDescending(x => x.TitleVal).ThenBy(x=> x.StudyDataText);
+            }).OrderByDescending(x => x.TitleVal).ThenBy(x => x.StudyDataText);
+
+            List<FaceRatioData> fd = new List<FaceRatioData>();
+            using (var context = new AppDbContext())
+            {
+
+                fd = context.FaceRatioData.ToList();
+
+            }
+
+            lvFaceRatioList.ItemsSource = fd.Select(x => new
+            {
+                x.Title,
+                x.Id,
+                x.FaceRatio,
+                x.Width,
+                x.Height
+            }).OrderByDescending(x => x.Title);
 
         }
         private void btnUndo_Click(object sender, RoutedEventArgs e)
@@ -1397,6 +1587,13 @@ namespace Footart
 
                 if (QAnglelPointList.Count > 0)
                     QAnglelPointList.Remove(QAnglelPointList[QAnglelPointList.Count - 1]);
+
+            }
+            else if (MouseMode == EnumMouseMode.FaceRatio)
+            {
+
+                if (FaceRatioPointList.Count > 0)
+                    FaceRatioPointList.Remove(FaceRatioPointList[FaceRatioPointList.Count - 1]);
 
             }
 

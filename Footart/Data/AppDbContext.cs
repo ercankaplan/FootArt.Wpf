@@ -12,6 +12,8 @@ namespace FootArt.Data
         public DbSet<StudyData> StudyData { get; set; }
         public DbSet<StudyDataPoint> StudyDataPoint { get; set; }
 
+        public DbSet<FaceRatioData> FaceRatioData { get; set; }
+
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
