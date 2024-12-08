@@ -166,6 +166,8 @@
                     <RowDefinition Height="25"></RowDefinition>
                     <RowDefinition Height="25"></RowDefinition>
                     <RowDefinition Height="25"></RowDefinition>
+                    <RowDefinition Height="25"></RowDefinition>
+                    <RowDefinition Height="25"></RowDefinition>
                     <RowDefinition Height="5"></RowDefinition>
                     <RowDefinition Height="150"></RowDefinition>
                 </Grid.RowDefinitions>
@@ -304,14 +306,18 @@
                 <Separator Grid.Column="0" Grid.ColumnSpan="4" Grid.Row="16"></Separator>
 
                 <TextBlock Name="txbFaceRatio" Text="Ratio" Grid.Column="1" Grid.Row="17"></TextBlock>
-                <TextBlock Name="txtFaceRatioVal" Height="22" Grid.Row="17" Grid.Column="2" />
+                <TextBlock Name="txtFaceRatioVal" Height="22" Grid.Column="2"  Grid.Row="17" />
+                <TextBlock Name="txbFaceRatioWidth" Text="Width" Grid.Column="1" Grid.Row="18"></TextBlock>
+                <TextBlock Name="txtFaceRatioWidth" Height="22"  Grid.Column="2" Grid.Row="18" />
+                <TextBlock Name="txbFaceRatioHeight" Text="Height" Grid.Column="1" Grid.Row="19"></TextBlock>
+                <TextBlock Name="txtFaceRatioHeight" Height="22"  Grid.Column="2" Grid.Row="19" />
 
-                <Button x:Name="btnAddFaceRatio" Content="Add" Grid.Column="2" Grid.Row="18" HorizontalAlignment="Stretch" VerticalAlignment="Top" Height="22" Click="btnAddFaceRatio_Click"></Button>
-                <Separator Grid.Column="0" Grid.ColumnSpan="4" Grid.Row="19"></Separator>
-                <ListView x:Name="lvFaceRatioList" ItemsSource="{Binding ElementName=WinUI, Path=FaceRatioDataList}"  Grid.ColumnSpan="4" Grid.Row="20" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" >
+                <Button x:Name="btnAddFaceRatio" Content="Add" Grid.Column="2" Grid.Row="20" HorizontalAlignment="Stretch" VerticalAlignment="Top" Height="22" Click="btnAddFaceRatio_Click"></Button>
+                <Separator Grid.Column="0" Grid.ColumnSpan="4" Grid.Row="21"></Separator>
+                <ListView x:Name="lvFaceRatioList" ItemsSource="{Binding ElementName=WinUI, Path=FaceRatioDataList}"  Grid.ColumnSpan="4" Grid.Row="22" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" >
                     <ListView.View>
                         <GridView>
-                            <GridViewColumn Header="Title" Width="auto" DisplayMemberBinding="{Binding Path=Title}" ></GridViewColumn>
+                            <GridViewColumn Header="Title" Width="150" DisplayMemberBinding="{Binding Path=Title}" ></GridViewColumn>
                             <GridViewColumn Header="FaceRatio" Width="auto" DisplayMemberBinding="{Binding Path=FaceRatio}" ></GridViewColumn>
                             <GridViewColumn Header="Width" Width="auto" DisplayMemberBinding="{Binding Path=Width}" ></GridViewColumn>
                             <GridViewColumn Header="Height" Width="auto" DisplayMemberBinding="{Binding Path=Height}" ></GridViewColumn>

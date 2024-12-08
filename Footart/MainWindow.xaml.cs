@@ -245,7 +245,7 @@ namespace Footart
 
             activeFile = ((Image)sender).Tag.ToString(); ;
 
-            if (activeFile.EndsWith(".jpeg") || activeFile.EndsWith(".jpg") || activeFile.EndsWith(".png") || activeFile.EndsWith(".gif"))
+            if (activeFile.EndsWith(".jpeg") || activeFile.EndsWith(".jpg") || activeFile.EndsWith(".png") || activeFile.EndsWith(".gif") || activeFile.EndsWith(".webp"))
             {
                 activeFilePath = model.Path + "\\" + activeFile;
                 activePath = model.Path + "\\";
@@ -276,7 +276,10 @@ namespace Footart
             cnvImage.Height = imgCurrent.Height;
             cnvImage.Width = imgCurrent.Width;
 
-            txtTitle.Text = path.Split('\\').Last().Split(' ').First();
+            txtTitle.Text = path.Split('\\').Last().Split('.').First();
+            txtFaceRatioVal.Text = "";
+            txtFaceRatioWidth.Text = "";
+            txtFaceRatioHeight.Text = "";
 
 
         }
@@ -588,6 +591,8 @@ namespace Footart
             }
             else if (MouseMode == EnumMouseMode.FaceRatio)
             {
+              
+
                 if (FaceRatioPointList.Count > 0 && FaceRatioPointList.Count < 4)
                 {
                     if (oTempIRLine != null)
@@ -609,22 +614,35 @@ namespace Footart
                     if (FaceRatioPointList.Count() % 2 != 0)
                         DrawLine(oTempIRLine, lastPoint, p, ACTIVE_LINE_COLOR);
 
+                    if (FaceRatioPointList.Count() == 1)
+                    {
+                       
+                        double a = 1; // FaceRatioPointList[0].X - FaceRatioPointList[1].X;
+                        double b = FaceRatioPointList[0].Y - p.Y;
+                        double height = Math.Sqrt(a * a + b * b);
+
+                        txtFaceRatioVal.Text = "";
+                        txtFaceRatioWidth.Text = "";
+                        txtFaceRatioHeight.Text = height.ToString("N2");
+
+                    }
                     if (FaceRatioPointList.Count() == 3)
                     {
                         kesisimNoktasi = FindIntersection(FaceRatioPointList[0], FaceRatioPointList[1], FaceRatioPointList[2], p);
 
-                        double a = FaceRatioPointList[0].X - FaceRatioPointList[1].X;
+                        double a = 1; // FaceRatioPointList[0].X - FaceRatioPointList[1].X;
                         double b = FaceRatioPointList[0].Y - FaceRatioPointList[1].Y;
-                        double height = Math.Sqrt(a * a + b * b);
+                        double height =  Math.Sqrt(a * a + b * b);
 
                         double c = FaceRatioPointList[2].X - p.X;
-                        double d = FaceRatioPointList[2].Y - p.Y;
-                        double width = Math.Sqrt(c * c + d * d);
+                        double d = 1;//FaceRatioPointList[2].Y - p.Y;
+                        double width =  Math.Sqrt(c * c + d * d);
 
                         dRatio =width  /height ;
 
                         txtFaceRatioVal.Text = dRatio.ToString("N2");
-
+                        txtFaceRatioWidth.Text = width.ToString("N2");
+                        txtFaceRatioHeight.Text = height.ToString("N2");
 
                     }
                 }
@@ -832,18 +850,19 @@ namespace Footart
                     txtKesisimAngle.Text = dAngle.ToString() + "°";
 
 
-                    double a = FaceRatioPointList[0].X - FaceRatioPointList[1].X;
+                    double a = 1; // FaceRatioPointList[0].X - FaceRatioPointList[1].X;
                     double b = FaceRatioPointList[0].Y - FaceRatioPointList[1].Y;
-                    double height = Math.Sqrt(a * a + b * b);
+                    double height =  Math.Sqrt(a * a + b * b);
 
                     double c = FaceRatioPointList[2].X - FaceRatioPointList[3].X;
-                    double d = FaceRatioPointList[2].Y - FaceRatioPointList[3].Y;
-                    double width = Math.Sqrt(c * c + d * d);
+                    double d = 1;// FaceRatioPointList[2].Y - FaceRatioPointList[3].Y;
+                    double width =  Math.Sqrt(c * c + d * d);
 
                     dRatio =width  /height ;
 
                     txtFaceRatioVal.Text = dRatio.ToString("N2");
-
+                    txtFaceRatioWidth.Text = width.ToString("N2");
+                    txtFaceRatioHeight.Text = height.ToString("N2");
 
                     Canvas.SetTop(txtKesisimAngle, kesisimNoktasi.Y + 3);
                     Canvas.SetLeft(txtKesisimAngle, kesisimNoktasi.X + 3);
@@ -1471,13 +1490,13 @@ namespace Footart
                     fd = new FaceRatioData() { Id = nwId , Title = txtTitle.Text };
 
 
-                double a = FaceRatioPointList[0].X - FaceRatioPointList[1].X;
+                double a = 1;// FaceRatioPointList[0].X - FaceRatioPointList[1].X;
                 double b = FaceRatioPointList[0].Y - FaceRatioPointList[1].Y;
-                double height = Math.Sqrt(a * a + b * b);
+                double height =  Math.Sqrt(a * a + b * b);
 
                 double c = FaceRatioPointList[2].X - FaceRatioPointList[3].X;
-                double d = FaceRatioPointList[2].Y - FaceRatioPointList[3].Y;
-                double width = Math.Sqrt(c * c + d * d);
+                double d = 1;// FaceRatioPointList[2].Y - FaceRatioPointList[3].Y;
+                double width =  Math.Sqrt(c * c + d * d);
 
                 dRatio =  width / height;
 
