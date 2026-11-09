@@ -69,7 +69,7 @@
             </Button>
            
             <TextBlock x:Name="lblRatio" Height="22" Width="69" Text="Lenght[cm]:"  Margin="0,18,0,5"></TextBlock>
-            <TextBox Name="txtLength" TextChanged="RatioChanged" Height="22" Width="36" Margin="2,18,0,5" Text="10"  />
+            <TextBox Name="txtLength" TextChanged="RatioChanged" Height="22" Width="36" Margin="2,18,0,5" Text="1"  />
             <TextBlock x:Name="lbl" Height="22" Width="5" Text="/"  Margin="5,18,0,0"></TextBlock>
             <TextBlock x:Name="lblDistance" Height="22" Width="50" Text=""  Margin="0,18,0,0">Ratio:</TextBlock>
             <TextBlock x:Name="txtRatio" Text=""  Margin="10,18,0,0"></TextBlock>
@@ -332,6 +332,7 @@
                         </GridView>
                     </ListView.View>
                 </ListView>
+                <Button x:Name="btnUpdateFaceRatio" Content="Update" Grid.Column="1" Grid.Row="20" HorizontalAlignment="Stretch" VerticalAlignment="Top" Height="22" Click="btnUpdateFaceRatio_Click"></Button>
 
             </Grid>
         </DockPanel>

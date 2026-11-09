@@ -198,7 +198,7 @@ namespace Footart
         {
             dRatio = 1;
             txtRatio.Text = "";
-            txtLength.Text = "";
+            //txtLength.Text = "";
             btnFoot.IsEnabled = false;
             txbSurname.Text = "";
             txbName.Text = "";
@@ -245,7 +245,7 @@ namespace Footart
 
             activeFile = ((Image)sender).Tag.ToString(); ;
 
-            if (activeFile.EndsWith(".jpeg") || activeFile.EndsWith(".jpg") || activeFile.EndsWith(".png") || activeFile.EndsWith(".gif") || activeFile.EndsWith(".webp"))
+            if (activeFile.EndsWith(".jpeg") || activeFile.EndsWith(".jpg") || activeFile.EndsWith(".JPG") || activeFile.EndsWith(".png") || activeFile.EndsWith(".gif") || activeFile.EndsWith(".webp"))
             {
                 activeFilePath = model.Path + "\\" + activeFile;
                 activePath = model.Path + "\\";
@@ -616,19 +616,23 @@ namespace Footart
 
                     if (FaceRatioPointList.Count() == 1)
                     {
-                       
+
+                        double dUnitRatio = Convert.ToDouble(txtRatio.Text);
+
                         double a = 1; // FaceRatioPointList[0].X - FaceRatioPointList[1].X;
                         double b = FaceRatioPointList[0].Y - p.Y;
                         double height = Math.Sqrt(a * a + b * b);
 
                         txtFaceRatioVal.Text = "";
                         txtFaceRatioWidth.Text = "";
-                        txtFaceRatioHeight.Text = height.ToString("N2");
+                        txtFaceRatioHeight.Text = (height* dUnitRatio).ToString("N2");
 
                     }
                     if (FaceRatioPointList.Count() == 3)
                     {
                         kesisimNoktasi = FindIntersection(FaceRatioPointList[0], FaceRatioPointList[1], FaceRatioPointList[2], p);
+
+                        double dUnitRatio = Convert.ToDouble(txtRatio.Text);
 
                         double a = 1; // FaceRatioPointList[0].X - FaceRatioPointList[1].X;
                         double b = FaceRatioPointList[0].Y - FaceRatioPointList[1].Y;
@@ -641,8 +645,8 @@ namespace Footart
                         dRatio =width  /height ;
 
                         txtFaceRatioVal.Text = dRatio.ToString("N2");
-                        txtFaceRatioWidth.Text = width.ToString("N2");
-                        txtFaceRatioHeight.Text = height.ToString("N2");
+                        txtFaceRatioWidth.Text = (width * dUnitRatio ).ToString("N2");
+                        txtFaceRatioHeight.Text = (height * dUnitRatio).ToString("N2");
 
                     }
                 }
@@ -860,9 +864,11 @@ namespace Footart
 
                     dRatio =width  /height ;
 
+                    double dUnitRatio = Convert.ToDouble(txtRatio.Text);
+
                     txtFaceRatioVal.Text = dRatio.ToString("N2");
-                    txtFaceRatioWidth.Text = width.ToString("N2");
-                    txtFaceRatioHeight.Text = height.ToString("N2");
+                    txtFaceRatioWidth.Text = (width * dUnitRatio).ToString("N2");
+                    txtFaceRatioHeight.Text = (height * dUnitRatio).ToString("N2");
 
                     Canvas.SetTop(txtKesisimAngle, kesisimNoktasi.Y + 3);
                     Canvas.SetLeft(txtKesisimAngle, kesisimNoktasi.X + 3);
@@ -1471,7 +1477,30 @@ namespace Footart
 
 
         }
+        private void btnUpdateFaceRatio_Click(object sender, RoutedEventArgs e)
+        {
 
+            using (var context = new AppDbContext())
+            {
+                FaceRatioData fd = context.FaceRatioData.Where(x => x.Title == txtTitle.Text).FirstOrDefault();
+
+                if (fd != null)
+                {
+
+
+
+                    decimal dUnitRatio = Convert.ToDecimal(txtRatio.Text);
+
+                    fd.Height = fd.Height * dUnitRatio;
+                    fd.Optime = DateTime.Now;
+                    fd.Width = fd.Width * dUnitRatio;
+
+                    context.SaveChanges();
+                    RefreshGrid();
+
+                }
+            }
+        }
         private void btnAddFaceRatio_Click(object sender, RoutedEventArgs e)
         {
             Guid nwId = Guid.NewGuid();
@@ -1500,12 +1529,14 @@ namespace Footart
 
                 dRatio =  width / height;
 
+                decimal dUnitRatio = Convert.ToDecimal(txtRatio.Text);
 
 
                 fd.FaceRatio = Convert.ToDecimal(dRatio);
-                fd.Height = Convert.ToDecimal(height);
+                fd.Height = Convert.ToDecimal(height) * dUnitRatio;
                 fd.Optime = DateTime.Now;
-                fd.Width = Convert.ToDecimal(width);
+                fd.Width = Convert.ToDecimal(width) * dUnitRatio;
+
 
                 if (fd.Id == nwId)
                     context.FaceRatioData.Add(fd);
@@ -1629,7 +1660,7 @@ namespace Footart
                 double distance = Math.Sqrt(a * a + b * b);
 
                 dRatio = double.Parse(txtLength.Text) / distance;
-                txtRatio.Text = dRatio.ToString();
+                txtRatio.Text = dRatio.ToString("N2");
 
                 btnFoot.IsEnabled = true;
             }
